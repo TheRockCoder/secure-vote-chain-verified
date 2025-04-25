@@ -4,7 +4,6 @@ import { useVoting } from '@/context/VotingContext';
 import { Check, UserIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { motion } from 'framer-motion';
 
 const VotingBallot = () => {
   const { candidates, submitVote, isLoading, hasVoted, voteResults } = useVoting();
@@ -52,10 +51,9 @@ const VotingBallot = () => {
       <CardContent>
         <div className="grid gap-4 md:grid-cols-2">
           {candidates.map((candidate) => (
-            <motion.div
+            <div 
               key={candidate.id}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              className="transition-transform hover:scale-105 active:scale-95"
             >
               <Card 
                 className={`cursor-pointer border-2 transition-all ${
@@ -84,7 +82,7 @@ const VotingBallot = () => {
                   </div>
                 </CardContent>
               </Card>
-            </motion.div>
+            </div>
           ))}
         </div>
         
