@@ -35,7 +35,8 @@ const PhoneVerification = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (validatePhone(phone)) {
-      await authenticateUser(phone);
+      const success = await authenticateUser(phone);
+      console.log("Authentication result:", success);
     }
   };
 

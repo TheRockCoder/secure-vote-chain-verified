@@ -8,11 +8,17 @@ import LiveResults from './LiveResults';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const VotingSystem = () => {
-  const { isAuthenticated } = useVoting();
+  const { isAuthenticated, userPhone } = useVoting();
   const [showOtpVerification, setShowOtpVerification] = useState(false);
   const [activeTab, setActiveTab] = useState<string>("vote");
 
+  // Handle authentication flow
   if (!isAuthenticated) {
+    // If a phone number is present but not authenticated, show OTP verification
+    if (userPhone && !showOtpVerification) {
+      setShowOtpVerification(true);
+    }
+    
     if (showOtpVerification) {
       return <OtpVerification onBack={() => setShowOtpVerification(false)} />;
     }

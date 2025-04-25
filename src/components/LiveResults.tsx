@@ -1,58 +1,54 @@
 
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useVoting } from '@/context/VotingContext';
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
-import { Progress } from '@/components/ui/progress';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
-const COLORS = ['#1a73e8', '#34a853', '#fbbc04', '#ea4335', '#673ab7'];
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
 
 const LiveResults = () => {
-  const { voteResults, candidates, totalVotes } = useVoting();
-  const [chartData, setChartData] = React.useState<Array<{ name: string; value: number; }>[]>([]);
+  const { candidates, voteResults, totalVotes } = useVoting();
+  const [chartData, setChartData] = useState<{ name: string; value: number; }[]>([]);
   
   useEffect(() => {
-    // Transform the data for the chart
-    const data = candidates.map(candidate => ({
-      name: candidate.name,
-      value: voteResults[candidate.id] || 0,
-    }));
-    
-    setChartData(data);
-  }, [voteResults, candidates]);
-
-  const formatPercent = (votes: number) => {
-    if (totalVotes === 0) return '0%';
-    return `${Math.round((votes / totalVotes) * 100)}%`;
-  };
+    if (candidates && voteResults) {
+      const data = candidates.map(candidate => ({
+        name: candidate.name,
+        value: voteResults[candidate.id] || 0
+      }));
+      
+      // Fix the type issue by directly setting the array, not trying to use it as a nested array
+      setChartData(data);
+    }
+  }, [candidates, voteResults]);
 
   return (
     <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
-        <CardTitle className="flex items-center justify-center">
-          Live Results
-          <span className="ml-2 text-xs bg-vote-accent/20 text-vote-accent py-1 px-2 rounded-full animate-pulse-blue">
-            Real-time
-          </span>
-        </CardTitle>
+        <CardTitle className="text-center">Live Voting Results</CardTitle>
         <CardDescription className="text-center">
-          Total votes: {totalVotes}
+          Results update in real-time as votes are cast
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {totalVotes > 0 ? (
+        {totalVotes === 0 ? (
+          <div className="py-12 text-center">
+            <p className="text-lg font-medium">No votes have been cast yet</p>
+            <p className="text-muted-foreground mt-2">Results will appear here once voting begins</p>
+          </div>
+        ) : (
           <>
-            <div className="mb-6 h-60">
+            <div className="h-64 mb-6">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
                     data={chartData}
                     cx="50%"
                     cy="50%"
-                    labelLine={false}
+                    innerRadius={60}
                     outerRadius={80}
                     fill="#8884d8"
+                    paddingAngle={5}
                     dataKey="value"
                     label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                   >
@@ -60,37 +56,34 @@ const LiveResults = () => {
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip 
-                    formatter={(value: number) => [`${value} votes`, 'Count']}
-                  />
+                  <Tooltip formatter={(value) => [`${value} votes`, 'Count']} />
+                  <Legend />
                 </PieChart>
               </ResponsiveContainer>
             </div>
-            
-            <Separator className="my-4" />
-            
-            <div className="space-y-4">
-              {candidates.map((candidate) => {
-                const votes = voteResults[candidate.id] || 0;
-                const percent = totalVotes === 0 ? 0 : (votes / totalVotes) * 100;
-                
-                return (
-                  <div key={candidate.id} className="space-y-1">
-                    <div className="flex justify-between text-sm">
-                      <span>{candidate.name}</span>
-                      <span className="font-medium">{votes} votes ({formatPercent(votes)})</span>
-                    </div>
-                    <Progress value={percent} className="h-2" />
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4">
+              {chartData.map((entry, index) => (
+                <div key={index} className="text-center">
+                  <div className="text-lg font-medium">{entry.name}</div>
+                  <div className="flex items-center justify-center gap-2">
+                    <div 
+                      className="w-3 h-3 rounded-full" 
+                      style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                    ></div>
+                    <span className="text-2xl font-bold">{entry.value}</span>
                   </div>
-                );
-              })}
+                  <div className="text-sm text-muted-foreground">
+                    {totalVotes > 0 ? `${((entry.value / totalVotes) * 100).toFixed(1)}%` : '0%'}
+                  </div>
+                </div>
+              ))}
             </div>
           </>
-        ) : (
-          <div className="text-center py-8 text-muted-foreground">
-            No votes have been cast yet. Results will appear here in real-time as votes are registered on the blockchain.
-          </div>
         )}
+        
+        <div className="text-center mt-6">
+          <p className="text-sm text-muted-foreground">Total votes: {totalVotes}</p>
+        </div>
       </CardContent>
     </Card>
   );

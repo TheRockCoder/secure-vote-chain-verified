@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Separator } from '@/components/ui/separator';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { Lock, ArrowLeft } from 'lucide-react';
+import { getOTPForDev } from '@/lib/otpService';
 
 interface OtpVerificationProps {
   onBack: () => void;
@@ -16,6 +17,14 @@ const OtpVerification = ({ onBack }: OtpVerificationProps) => {
   const [timer, setTimer] = useState(30);
   const [canResend, setCanResend] = useState(false);
   const { verifyOTP, userPhone, isLoading, resendOTP } = useVoting();
+
+  // Debug - Console log the current OTP for development
+  useEffect(() => {
+    if (userPhone) {
+      const devOtp = getOTPForDev(userPhone);
+      console.log(`DEV ONLY - OTP for ${userPhone}:`, devOtp);
+    }
+  }, [userPhone]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout | undefined;
@@ -35,6 +44,7 @@ const OtpVerification = ({ onBack }: OtpVerificationProps) => {
 
   const handleVerify = async () => {
     if (otp.length === 6) {
+      console.log("Attempting to verify OTP:", otp);
       await verifyOTP(otp);
     }
   };
@@ -49,6 +59,8 @@ const OtpVerification = ({ onBack }: OtpVerificationProps) => {
   };
 
   const maskedPhone = userPhone.replace(/(\d{3})\d{4}(\d{3})/, '$1****$2');
+
+  console.log("Rendering OTP verification for phone:", userPhone);
 
   return (
     <Card className="w-full max-w-md mx-auto">

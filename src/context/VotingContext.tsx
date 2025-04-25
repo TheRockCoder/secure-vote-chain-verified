@@ -69,6 +69,7 @@ export const VotingProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           title: "OTP Sent",
           description: "A verification code has been sent to your phone.",
         });
+        console.log("OTP sent successfully to:", phone);
         return true;
       } else {
         toast({
@@ -118,6 +119,7 @@ export const VotingProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const verifyOTP = async (otp: string): Promise<boolean> => {
     setIsLoading(true);
     try {
+      console.log("Verifying OTP:", otp, "for phone:", userPhone);
       const result = validateOTP(userPhone, otp);
       if (result.valid && result.voterId) {
         // Generate a secure voter ID
